@@ -1,8 +1,8 @@
-FROM alpine:3.11
+FROM alpine:3.17
 
 # VERSIONS
-ENV ALPINE_VERSION=3.11 \
-    PYTHON_VERSION=3.6.9
+ENV ALPINE_VERSION=3.17 \
+    PYTHON_VERSION=3.11.3
 
 # PATHS
 ENV PYTHON_PATH=/usr/local/bin/ \
@@ -25,14 +25,16 @@ ENV PYTHON_PATH=/usr/local/bin/ \
       bash \
       git \
       ca-certificates \
-      libressl-dev \
+      openssl-dev \
+      libffi-dev \
       tzdata \
     " \
     # PACKAGES needed to built python
     PYTHON_BUILD_PACKAGES="\
       bzip2-dev \
       coreutils \
-      dpkg-dev dpkg \
+      dpkg \
+      dpkg-dev \
       expat-dev \
       findutils \
       gcc \
@@ -44,7 +46,7 @@ ENV PYTHON_PATH=/usr/local/bin/ \
       linux-headers \
       make \
       ncurses-dev \
-      libressl-dev \
+      openssl-dev \
       pax-utils \
       readline-dev \
       sqlite-dev \
@@ -54,11 +56,7 @@ ENV PYTHON_PATH=/usr/local/bin/ \
       util-linux-dev \
       xz-dev \
       zlib-dev \
-      git \
     "
-
-# Copy in the entrypoint script -- this installs prerequisites on container start.
-COPY entrypoint.sh /entrypoint.sh
 
 RUN set -ex ;\
     # find MAJOR and MINOR python versions based on $PYTHON_VERSION
@@ -82,6 +80,8 @@ RUN set -ex ;\
     git clone --depth 1 https://github.com/pyenv/pyenv /usr/local/lib/pyenv ;\
     # install
     GNU_ARCH="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" ;\
+    # flag explanation:
+    # --with-shared : python-dev
     PYENV_ROOT=/usr/local/lib/pyenv CONFIGURE_OPTS="--build=$GNU_ARCH --enable-loadable-sqlite-extensions --enable-shared --with-system-expat --with-system-ffi --without-ensurepip --with-shared" /usr/local/lib/pyenv/bin/pyenv install $PYTHON_VERSION ;\
     # keep the needed .so files
     # ignore libpython - that one comes from the pyenv instalation
@@ -106,18 +106,7 @@ RUN set -ex ;\
     ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime ;\
     # remove build dependencies and any leftover apk cache
     apk del --no-cache --purge .build-deps ;\
-    rm -rf /var/cache/apk/* ;\
-    # set proper permission to run entrypoint script
-    chmod a+x /entrypoint.sh
-
-# install requirements
-# this way when you build you won't need to install again
-# and since COPY is cached we don't need to wait
-ONBUILD COPY requirements.txt /tmp/requirements.txt
-
-# Run the dependencies installer and then allow it to be run again if needed.
-ONBUILD RUN /entrypoint.sh -r /tmp/requirements.txt
-ONBUILD RUN rm -f /requirements.installed
+    rm -rf /var/cache/apk/*
 
 # since we will be "always" mounting the volume, we can set this up
 ENTRYPOINT ["/usr/bin/dumb-init"]
