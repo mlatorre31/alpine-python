@@ -44,8 +44,8 @@ jobs:
           for dir in */; do
             if [ -n "$(git diff --name-only HEAD^ $dir)" ]; then
               echo "Building $dir"
-              cd "$dir"
-              IMAGE_NAME="${{ github.repository }}:${{ dir%/ }}"
+              cd "$dir" || continue
+              IMAGE_NAME="${{ github.repository }}:${dir}"
               docker build -t "$IMAGE_NAME" .
               docker push "$IMAGE_NAME"
               cd ..
