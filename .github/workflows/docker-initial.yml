@@ -46,7 +46,7 @@ jobs:
             cd "$dir" || continue
             IMAGE_NAME="${{ github.repository }}:${dir%/}"
             docker build -t "$IMAGE_NAME" .
-            docker push "$IMAGE_NAME"
+            docker push "${{ env.REGISTRY }}/$IMAGE_NAME"
             cd ..
           done
 
