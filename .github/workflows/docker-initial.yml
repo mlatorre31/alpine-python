@@ -42,15 +42,11 @@ jobs:
       - name: Build and push Docker images
         run: |
           for dir in */; do
-            if [ -n "$(git diff --name-only ${{ github.base_ref }}..${{ github.head_ref }} -- $dir)" ]; then
-              echo "Building $dir"
-              cd "$dir" || continue
-              IMAGE_NAME="${{ github.repository }}:$dir"
-              docker build -t "$IMAGE_NAME" .
-              docker push "$IMAGE_NAME"
-              cd ..
-            else
-              echo "No changes detected in $dir, skipping Docker build."
-            fi
+            echo "Building $dir"
+            cd "$dir" || continue
+            IMAGE_NAME="${{ github.repository }}:$dir"
+            docker build -t "$IMAGE_NAME" .
+            docker push "$IMAGE_NAME"
+            cd ..
           done
 
