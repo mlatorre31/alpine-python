@@ -25,6 +25,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        fetch-depth: '0'
 
       - name: Log in to registry
         # This is where you will update the personal access token to GITHUB_TOKEN
@@ -33,7 +34,7 @@ jobs:
       - name: Build and push Docker images
         run: |
           for dir in */; do
-            if [ -n "$(git diff --name-only HEAD HEAD^ -- $dir)" ]; then
+            if [ -n "$(git diff --name-only ${{ github.head_ref }}~ -- $dir)" ]; then
               echo "Building $dir"
               cd "$dir" || continue
               IMAGE_NAME="${{ env.REGISTRY }}/${{ env.GH_REPO }}:${dir%/}"
