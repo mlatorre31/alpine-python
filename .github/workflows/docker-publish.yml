@@ -13,7 +13,8 @@ env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}
+  GH_REPO: ${{ github.repository }}
+  APP_NAME: alpine-python
 
 
 jobs:
@@ -35,9 +36,9 @@ jobs:
             if [ -n "$(git diff --name-only ${{ github.base_ref }}..${{ github.head_ref }} -- $dir)" ]; then
               echo "Building $dir"
               cd "$dir" || continue
-              IMAGE_NAME="${{ github.repository }}:${dir%/}"
+              IMAGE_NAME="${{ env.REGISTRY }}/${{ env.GH_REPO }}:${dir%/}"
               docker build -t "$IMAGE_NAME" .
-              docker push "${{ env.REGISTRY }}/$IMAGE_NAME"
+              docker push "$IMAGE_NAME"
               cd ..
             else
               echo "No changes detected in $dir, skipping Docker build."
