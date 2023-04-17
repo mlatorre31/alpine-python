@@ -33,7 +33,7 @@ jobs:
       - name: Build and push Docker images
         run: |
           for dir in */; do
-            if [ -n "$(git diff --name-only ${{ github.ref }}~ -- $dir)" ]; then
+            if [ -n "$(git diff --name-only ${{ github.ref }} -- $dir)" ]; then
               echo "Building $dir"
               cd "$dir" || continue
               IMAGE_NAME="${{ env.REGISTRY }}/${{ env.GH_REPO }}:${dir%/}"
