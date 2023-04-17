@@ -25,7 +25,7 @@ ENV PYTHON_PATH=/usr/local/bin/ \
       bash \
       git \
       ca-certificates \
-      libressl-dev \
+      openssl-dev \
       tzdata \
     " \
     # PACKAGES needed to built python
